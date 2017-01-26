@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta name="viewport" content="width=device-width">
+<style>
+.audiostart{
+  background-color: #ffcccc;
+}
+</style>
+  </head>
+  <body>
+    <button onclick="start()">start</button>
+
+<script>
+function start(){
+  // 録音開始
+  window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+  var recognition = new window.SpeechRecognition();
+  // recognition.lang = 'ja';
+  recognition.lang = 'en';
+  // recognition.interimResults = config.data.interimResults;
+  // recognition.maxAlternatives = config.data.maxAlternatives;
+
+  var eventNames = [
+    'audiostart',
+    'soundstart',
+    'speechstart',
+    'speechend',
+    'soundend',
+    'audioend',
+    'result',
+    'error',
+    'start',
+    'end'
+  ];
+  eventNames.forEach(function(eventName){
+    recognition.addEventListener(eventName, function(){
+      console.log('event',event.type)
+    });
+  });
+  recognition.start();
+}
+
+</script>
+
+
+  </body>
+</html>

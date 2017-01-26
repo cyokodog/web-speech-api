@@ -1,0 +1,360 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta name="viewport" content="width=device-width">
+<style>
+
+
+
+
+body{
+  text-align: center;
+}
+
+body{
+  color: #555;
+  font-size: 12px;
+}
+dl{
+  margin:0;
+}
+dd{
+  margin-left: 1em;
+}
+.audiostart{
+  background-color: #fffff0;
+}
+.rec-Area{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 100%;
+  overflow-y: auto;
+}
+.rec-MatchWord{
+  color: red;
+}
+
+
+
+.title-Area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+}
+
+
+.img-Area img {
+position: absolute;
+top: 50%;
+left: 50%;
+
+
+width: 5px;
+    transition: transform 3s linear;
+}
+
+.img-Area img.hit {
+    transition: transform 0.5s linear;
+}
+
+
+
+.img-Area img.zoom{
+    transform: scale(300);
+}
+</style>
+  </head>
+  <body>
+
+
+<div class="img-Area">
+</div>
+<div class="rec-Area">
+</div>
+
+
+<div class="title-Area">
+  <div class="title-Desc">
+    <h1>音声認識フルーツ当てゲーム</h1>
+    <p>せまってくるフルーツの名前をPCに向かって言ってください</p>
+  </div>
+  <a href="javascript:start()">はじめる</a>
+</div>
+
+
+
+<script>
+
+var FRUIT = [
+  {
+    fileName: 'orange.png',
+    jpName: 'みかん',
+    enName: 'orange'
+  },
+  {
+    fileName: 'apple.png',
+    jpName: 'りんご',
+    enName: 'apple'
+  },
+  {
+    fileName: 'banana.jpg',
+    jpName: 'バナナ',
+    enName: 'banana'
+  },
+  {
+    fileName: 'grape.png',
+    jpName: 'ぶどう',
+    enName: 'grape'
+  }
+];
+
+var elImgArea = document.querySelector('.img-Area');
+var elTitleArea = document.querySelector('.title-Area');
+var elRecArea = document.querySelector('.rec-Area');
+
+var runFlg;
+var currentFruit;
+var currentFruitImg;
+
+var synthes = new SpeechSynthesisUtterance();
+synthes.lang = 'en';
+// synthes.lang = 'ja';
+
+var voices;
+voices = voices || speechSynthesis.getVoices()
+
+function showFruit(){
+  currentFruit = FRUIT[Math.floor(Math.random() * FRUIT.length)];
+  var img = currentFruitImg = document.createElement('img');
+  img.setAttribute('src', './images/' + currentFruit.fileName);
+  elImgArea.appendChild(img);
+  var recognition = getRecognition();
+
+voices = voices || speechSynthesis.getVoices()
+console.log('voices.length',voices)
+  synthes.text = currentFruit.enName;
+  speechSynthesis.speak(synthes);
+
+  setTimeout(function(){
+    recognition.start();
+  },500)
+
+  setTimeout(function(){
+    img.classList.add('zoom');
+    img.addEventListener('transitionend', function(){
+      img.parentElement.removeChild(img);
+      showFruit();
+    });
+  }, 0);
+}
+function start(){
+  elTitleArea.style.display = 'none';
+  showFruit();
+}
+
+function getRecognition(){
+
+  window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+  var recognition = new window.SpeechRecognition();
+  // recognition.lang = 'ja';
+  recognition.lang = 'en';
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 10;
+  recognition.addEventListener('result', function(event){
+    console.log('result')
+    var speechRecognitionResultList = event.results;
+    var speechRecognitionResult = speechRecognitionResultList[0];
+    [].find.call(speechRecognitionResult, function(speechRecognitionAlternative, resultIndex){
+      speechRecognitionAlternative.transcript.split(' ').forEach(function(word){
+        console.log('word',word)
+        var elText = document.createElement('p');
+        elText.textContent = word;
+        elRecArea.appendChild(elText);
+        elRecArea.scrollTop = 100000;
+        if(currentFruit && currentFruit.enName.toLowerCase() === word.toLowerCase()){
+          elText.classList.add('rec-MatchWord');
+          currentFruitImg.classList.remove('zoom');
+          currentFruitImg.classList.add('hit');
+          currentFruit = null;
+          recognition.abort();
+
+  synthes.text = 'bon';
+  speechSynthesis.speak(synthes);
+
+
+        }
+      });
+    });
+  });
+  recognition.addEventListener('end', function(event){
+    console.log('end')
+  }, false);
+
+  return recognition;
+
+}
+
+
+
+// function startGame(){
+//   window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+//   var recognition = new window.SpeechRecognition();
+//   // recognition.lang = 'ja';
+//   recognition.lang = 'en';
+//   recognition.interimResults = true;
+//   recognition.maxAlternatives = 10;
+//   recognition.addEventListener('result', function(event){
+//     var speechRecognitionResultList = event.results;
+//     var speechRecognitionResult = speechRecognitionResultList[0];
+//     [].find.call(speechRecognitionResult, function(speechRecognitionAlternative, resultIndex){
+//       speechRecognitionAlternative.transcript.split(' ').forEach(function(word){
+// console.log('word',word)
+//         var elText = document.createElement('p');
+//         elText.textContent = word;
+//         elRecArea.appendChild(elText);
+//         elRecArea.scrollTop = 100000;
+//         if(currentFruit && currentFruit.enName.toLowerCase() === word.toLowerCase()){
+//           elText.classList.add('rec-MatchWord');
+//           currentFruitImg.classList.remove('zoom');
+//           currentFruitImg.classList.add('hit');
+//           currentFruit = null;
+//           recognition.abort();
+
+//   synthes.text = 'yeah';
+//   speechSynthesis.speak(synthes);
+
+//         }
+//       });
+//     });
+//   }, false);
+
+//   recognition.addEventListener('end', function(event){
+//     recognition.start();
+//   }, false);
+
+//   showFruit();
+//   recognition.start();
+// }
+
+
+// function start(){
+//   elTitleArea.style.display = 'none';
+//   startGame();
+// }
+
+
+// var FRUIT = [
+//   {
+//     fileName: 'orange.png',
+//     jpName: 'みかん',
+//     enName: 'orange'
+//   },
+//   {
+//     fileName: 'apple.png',
+//     jpName: 'りんご',
+//     enName: 'apple'
+//   },
+//   {
+//     fileName: 'banana.jpg',
+//     jpName: 'バナナ',
+//     enName: 'banana'
+//   },
+//   {
+//     fileName: 'grape.png',
+//     jpName: 'ぶどう',
+//     enName: 'grape'
+//   }
+// ];
+
+// var elImgArea = document.querySelector('.img-Area');
+// var elTitleArea = document.querySelector('.title-Area');
+// var elRecArea = document.querySelector('.rec-Area');
+
+// var runFlg;
+// var currentFruit;
+// var currentFruitImg;
+
+// var synthes = new SpeechSynthesisUtterance();
+// synthes.lang = 'en';
+// // synthes.lang = 'ja';
+
+// function showFruit(){
+//   currentFruit = FRUIT[Math.floor(Math.random() * FRUIT.length)];
+//   // synthes.text = currentFruit.enName;
+//   // speechSynthesis.speak(synthes);
+//   var img = currentFruitImg = document.createElement('img');
+//   img.setAttribute('src', './images/' + currentFruit.fileName);
+//   elImgArea.appendChild(img);
+//   setTimeout(function(){
+//     img.classList.add('zoom');
+//     img.addEventListener('transitionend', function(){
+//       img.parentElement.removeChild(img);
+//       showFruit();
+//     });
+//   }, 0);
+// }
+
+
+// function startGame(){
+//   window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+//   var recognition = new window.SpeechRecognition();
+//   // recognition.lang = 'ja';
+//   recognition.lang = 'en';
+//   recognition.interimResults = true;
+//   recognition.maxAlternatives = 10;
+//   recognition.addEventListener('result', function(event){
+//     var speechRecognitionResultList = event.results;
+//     var speechRecognitionResult = speechRecognitionResultList[0];
+//     [].find.call(speechRecognitionResult, function(speechRecognitionAlternative, resultIndex){
+//       speechRecognitionAlternative.transcript.split(' ').forEach(function(word){
+// console.log('word',word)
+//         var elText = document.createElement('p');
+//         elText.textContent = word;
+//         elRecArea.appendChild(elText);
+//         elRecArea.scrollTop = 100000;
+//         if(currentFruit && currentFruit.enName.toLowerCase() === word.toLowerCase()){
+//           elText.classList.add('rec-MatchWord');
+//           currentFruitImg.classList.remove('zoom');
+//           currentFruitImg.classList.add('hit');
+//           currentFruit = null;
+//           recognition.abort();
+
+//   synthes.text = 'yeah';
+//   speechSynthesis.speak(synthes);
+
+//         }
+//       });
+//     });
+//   }, false);
+
+//   recognition.addEventListener('end', function(event){
+//     recognition.start();
+//   }, false);
+
+//   showFruit();
+//   recognition.start();
+// }
+
+
+// function start(){
+//   elTitleArea.style.display = 'none';
+//   startGame();
+// }
+
+
+
+
+
+
+</script>
+
+
+  </body>
+</html>
