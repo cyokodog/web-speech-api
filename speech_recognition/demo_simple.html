@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta name="viewport" content="width=device-width">
+<style>
+.audiostart{
+  background-color: #ffcccc;
+}
+</style>
+  </head>
+  <body>
+<h1>シンプルなデモ</h1>
+<button onclick="start()">start()</button>
+<div class="result"></div>
+<script>
+window.SpeechRecognition = window.SpeechRecognition || webkitSpeechRecognition;
+function start(){
+  var recognition = new window.SpeechRecognition();
+  recognition.lang = 'ja';
+  recognition.addEventListener('result', function(event){
+    alert(event.results[0][0].transcript);
+  });
+  recognition.start();
+}
+</script>
+
+
+  </body>
+</html>
